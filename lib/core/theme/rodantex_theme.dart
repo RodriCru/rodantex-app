@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'rodantex_colors.dart';
+import 'package:rodantex_app/core/theme/rodantex_colors.dart';
 
 /// Tema de la aplicación Rodantex, construido con la paleta "Fusion".
 ///
