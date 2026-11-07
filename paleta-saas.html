@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rodantex SaaS — Paleta Fusion (Teal·Coral·Lime·Graphite)</title>
+<style>
+  :root {
+    /* ===== ESTRUCTURA (Graphite) ===== */
+    --color-primary: #17232F;
+    --color-primary-hover: #0F1922;
+    --color-primary-light: #293B4B;
+    --color-slate: #293B4B;
+
+    /* ===== ACCIÓN POSITIVA (Lime) ===== */
+    --color-secondary: #B8D957;
+    --color-secondary-hover: #A6C644;
+    --color-secondary-light: #D4E894;
+
+    /* ===== INFO / DISPONIBLE (Teal) ===== */
+    --color-info: #2A9D8F;
+    --color-info-hover: #21867A;
+    --color-info-light: #5DC4B8;
+    --color-info-dark: #0F4C5C;
+
+    /* ===== ADVERTENCIA (Amber) ===== */
+    --color-accent: #E9A23B;
+    --color-accent-hover: #D18E2A;
+    --color-accent-light: #F2C77F;
+
+    /* ===== CRÍTICO (Coral) ===== */
+    --color-danger: #E76F51;
+    --color-danger-hover: #D45A3D;
+    --color-danger-light: #F4A38F;
+
+    /* ===== BRAND (logo, no cambia) ===== */
+    --brand-teal: #0F4C5C;
+    --brand-green: #2A9D8F;
+    --brand-coral: #E76F51;
+
+    /* ===== SUPERFICIES ===== */
+    --bg-app: #F3F5F6;
+    --bg-surface: #FFFFFF;
+    --bg-subtle: #E7EBEE;
+    --border: #D2D8DD;
+
+    /* ===== TEXTO ===== */
+    --text-primary: #17232F;
+    --text-secondary: #4A5A6B;
+    --text-muted: #8795A3;
+    --text-inverse: #FFFFFF;
+    --text-on-lime: #17232F;
+
+    /* ===== ESTADOS OPERATIVOS ===== */
+    --status-active-bg: #E8F2C6;    --status-active-fg: #3D5210;   /* lime */
+    --status-available-bg: #D9F2EE; --status-available-fg: #0F4C5C; /* teal */
+    --status-idle-bg: #E7EBEE;      --status-idle-fg: #293B4B;      /* gris */
+    --status-maint-bg: #FBEED4;     --status-maint-fg: #7A4E0F;     /* amber */
+    --status-incident-bg: #FBE3DC;  --status-incident-fg: #8A2E1A;  /* coral */
+    --status-delay-bg: #FCE8D6;     --status-delay-fg: #8A4A12;     /* amber oscuro */
+
+    /* ===== ALERTAS ===== */
+    --alert-info-bg: #D9F2EE;    --alert-info-fg: #0F4C5C;  /* teal */
+    --alert-success-bg: #E8F2C6; --alert-success-fg: #3D5210; /* lime */
+    --alert-warn-bg: #FBEED4;    --alert-warn-fg: #7A4E0F;  /* amber */
+    --alert-error-bg: #FBE3DC;   --alert-error-fg: #8A2E1A; /* coral */
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Manrope', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-app);
+    color: var(--text-primary);
+    line-height: 1.6;
+    padding: 32px 20px 80px;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  header.hero {
+    background: var(--color-primary);
+    color: var(--text-inverse);
+    padding: 36px 32px;
+    border-radius: 16px;
+    margin-bottom: 32px;
+    border-left: 6px solid var(--color-secondary);
+    position: relative;
+    overflow: hidden;
+  }
+  header.hero::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 6px; height: 100%;
+    background: var(--color-info);
+  }
+  header.hero h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+  header.hero p { color: var(--color-secondary); font-size: 15px; font-weight: 700; }
+  header.hero .personality { margin-top: 12px; font-size: 13px; color: #9FB0BE; font-weight: 500; }
+  header.hero .pill-row { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+  header.hero .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.08);
+    padding: 5px 12px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+  }
+  header.hero .pill .pd { width: 8px; height: 8px; border-radius: 50%; }
+
+  section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+
+  h2 {
+    font-size: 19px; font-weight: 800;
+    color: var(--color-primary);
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--bg-subtle);
+    letter-spacing: -0.3px;
+  }
+  h2 .tag {
+    background: var(--color-secondary); color: var(--text-on-lime);
+    font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    margin-left: 8px; font-weight: 800; letter-spacing: 0.3px; vertical-align: middle;
+  }
+
+  /* ===== SWATCHES ===== */
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 14px;
+  }
+  .swatch {
+    border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .swatch:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(23,35,47,0.12); }
+  .swatch .chip { height: 80px; }
+  .swatch .meta { padding: 10px 12px; }
+  .swatch .name { font-size: 12px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; }
+  .swatch .hex { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; color: var(--text-secondary); letter-spacing: 0.3px; }
+  .swatch .use { font-size: 10.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.35; }
+
+  /* ===== TABLAS ===== */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--bg-subtle); }
+  th { background: var(--bg-app); color: var(--text-secondary); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+  td code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--color-primary); background: var(--bg-subtle); padding: 2px 6px; border-radius: 4px; }
+
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+
+  /* ===== BADGES ===== */
+  .badges { display: flex; flex-wrap: wrap; gap: 10px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 999px;
+    font-size: 13px; font-weight: 700; border: 1px solid transparent;
+  }
+  .badge .b-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* ===== MINI EJEMPLO UI ===== */
+  .ui-demo {
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; min-height: 300px;
+  }
+  .ui-sidebar { background: var(--color-primary); color: var(--text-inverse); padding: 20px 16px; }
+  .ui-sidebar .logo { font-weight: 800; font-size: 15px; margin-bottom: 22px; color: var(--color-secondary); letter-spacing: 1.5px; }
+  .ui-sidebar .nav-item { padding: 9px 12px; border-radius: 8px; font-size: 13px; color: #9FB0BE; margin-bottom: 4px; font-weight: 600; }
+  .ui-sidebar .nav-item.active { background: var(--color-secondary); color: var(--text-on-lime); font-weight: 800; }
+  .ui-sidebar .nav-item.active.teal { background: var(--color-info); color: #fff; }
+  .ui-main { padding: 22px; background: var(--bg-app); }
+  .ui-main h3 { font-size: 15px; color: var(--text-primary); margin-bottom: 14px; font-weight: 800; }
+  .ui-cards { display: flex; gap: 12px; margin-bottom: 16px; }
+  .ui-card { flex: 1; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; border-top: 3px solid var(--color-secondary); }
+  .ui-card.teal { border-top-color: var(--color-info); }
+  .ui-card.amber { border-top-color: var(--color-accent); }
+  .ui-card.coral { border-top-color: var(--color-danger); }
+  .ui-card .num { font-size: 24px; font-weight: 800; color: var(--color-primary); letter-spacing: -0.5px; }
+  .ui-card .lbl { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+  .ui-btn {
+    padding: 9px 18px; border-radius: 8px; border: none;
+    font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit;
+    transition: background 0.15s ease;
+  }
+  .ui-btn.primary { background: var(--color-secondary); color: var(--text-on-lime); }
+  .ui-btn.primary:hover { background: var(--color-secondary-hover); }
+  .ui-btn.teal { background: var(--color-info); color: #fff; margin-left: 8px; }
+  .ui-btn.teal:hover { background: var(--color-info-hover); }
+  .ui-btn.coral { background: var(--color-danger); color: #fff; margin-left: 8px; }
+  .ui-btn.coral:hover { background: var(--color-danger-hover); }
+
+  /* ===== MODO OSCURO ===== */
+  .dark-demo { background: #0F1922; border-radius: 12px; padding: 20px; display: flex; flex-wrap: wrap; gap: 12px; }
+  .dark-swatch { border-radius: 8px; padding: 14px; min-width: 130px; flex: 1; }
+  .dark-swatch .dname { font-size: 12px; font-weight: 800; }
+  .dark-swatch .dhex { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; opacity: 0.85; margin-top: 2px; }
+
+  /* ===== CHART COLORS ===== */
+  .chart-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .chart-item {
+    flex: 1; min-width: 120px; border-radius: 8px; padding: 12px;
+    color: var(--text-inverse); font-size: 12px; font-weight: 800;
+    display: flex; flex-direction: column; justify-content: space-between; min-height: 74px;
+  }
+  .chart-item .cnum { font-size: 11px; opacity: 0.85; font-weight: 600; font-family: ui-monospace, monospace; }
+
+  /* ===== CONTRASTE ===== */
+  .contrast-row { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--bg-subtle); font-size: 13px; flex-wrap: wrap; }
+  .contrast-sample { padding: 8px 16px; border-radius: 6px; font-weight: 800; font-size: 13px; border: 1px solid var(--border); }
+  .pass { color: #3D5210; font-weight: 800; background: #E8F2C6; padding: 2px 8px; border-radius: 4px; }
+  .warn { color: #7A4E0F; font-weight: 800; background: #FBEED4; padding: 2px 8px; border-radius: 4px; }
+  .fail { color: #8A2E1A; font-weight: 800; background: #FBE3DC; padding: 2px 8px; border-radius: 4px; }
+
+  /* ===== LOGO ===== */
+  .logo-showcase { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; padding: 24px; background: var(--bg-app); border-radius: 12px; border: 1px solid var(--border); }
+  .logo-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: center; }
+  .logo-card.dark { background: var(--color-primary); border-color: var(--color-primary); }
+  .logo-note { font-size: 12.5px; color: var(--text-muted); margin-top: 12px; line-height: 1.5; }
+
+  /* ===== PRE ===== */
+  pre { background: var(--color-primary); color: #D4E894; padding: 20px; border-radius: 10px; overflow: auto; font-size: 12.5px; line-height: 1.7; }
+  pre code { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  pre .cm { color: #6B7F8F; }
+  pre .k { color: #B8D957; }
+
+  @media (max-width: 720px) {
+    .ui-demo { grid-template-columns: 1fr; }
+    .ui-sidebar { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ui-sidebar .logo { width: 100%; margin-bottom: 8px; }
+    .ui-cards { flex-direction: column; }
+    .contrast-row { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <header class="hero">
+    <h1>🚛 Rodantex SaaS</h1>
+    <p>Paleta Fusion · Graphite + Lime + Teal + Coral + Amber</p>
+    <div class="personality">Industrial · Tecnológica · Moderna · Robusta</div>
+    <div class="pill-row">
+      <span class="pill"><span class="pd" style="background:#17232F;"></span>Graphite · estructura</span>
+      <span class="pill"><span class="pd" style="background:#B8D957;"></span>Lime · acción</span>
+      <span class="pill"><span class="pd" style="background:#2A9D8F;"></span>Teal · info</span>
+      <span class="pill"><span class="pd" style="background:#E9A23B;"></span>Amber · advertencia</span>
+      <span class="pill"><span class="pd" style="background:#E76F51;"></span>Coral · crítico</span>
+    </div>
+  </header>
+
+  <!-- 1. MARCA -->
+  <section>
+    <h2>1. Colores base de marca <span class="tag">FUSIÓN</span></h2>
+    <div class="swatch-grid">
+      <div class="swatch">
+        <div class="chip" style="background:#17232F;"></div>
+        <div class="meta">
+          <div class="name">Graphite</div>
+          <div class="hex">#17232F</div>
+          <div class="use">Sidebar, header, texto principal</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:#B8D957;"></div>
+        <div class="meta">
+          <div class="name">Electric Lime</div>
+          <div class="hex">#B8D957</div>
+          <div class="use">CTA principal, activo, éxito</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:#2A9D8F;"></div>
+        <div class="meta">
+          <div class="name">Teal</div>
+          <div class="hex">#2A9D8F</div>
+          <div class="use">Info, disponible, serie secundaria</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:#E9A23B;"></div>
+        <div class="meta">
+          <div class="name">Amber</div>
+          <div class="hex">#E9A23B</div>
+          <div class="use">Advertencia, mantenimiento</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:#E76F51;"></div>
+        <div class="meta">
+          <div class="name">Coral</div>
+          <div class="hex">#E76F51</div>
+          <div class="use">Crítico, incidente, error</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:#F3F5F6;border-bottom:1px solid #D2D8DD;"></div>
+        <div class="meta">
+          <div class="name">Off-White</div>
+          <div class="hex">#F3F5F6</div>
+          <div class="use">Fondo general de la app</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. DERIVADOS -->
+  <section>
+    <h2>2. Derivados (hover / light)</h2>
+    <div class="swatch-grid">
+      <div class="swatch"><div class="chip" style="background:#0F1922;"></div><div class="meta"><div class="name">Graphite Hover</div><div class="hex">#0F1922</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#293B4B;"></div><div class="meta"><div class="name">Graphite Mid</div><div class="hex">#293B4B</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#A6C644;"></div><div class="meta"><div class="name">Lime Hover</div><div class="hex">#A6C644</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#D4E894;"></div><div class="meta"><div class="name">Lime Light</div><div class="hex">#D4E894</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#21867A;"></div><div class="meta"><div class="name">Teal Hover</div><div class="hex">#21867A</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#5DC4B8;"></div><div class="meta"><div class="name">Teal Light</div><div class="hex">#5DC4B8</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#D18E2A;"></div><div class="meta"><div class="name">Amber Hover</div><div class="hex">#D18E2A</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#F2C77F;"></div><div class="meta"><div class="name">Amber Light</div><div class="hex">#F2C77F</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#D45A3D;"></div><div class="meta"><div class="name">Coral Hover</div><div class="hex">#D45A3D</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#F4A38F;"></div><div class="meta"><div class="name">Coral Light</div><div class="hex">#F4A38F</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#0F4C5C;"></div><div class="meta"><div class="name">Teal Dark</div><div class="hex">#0F4C5C</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#C6E86A;"></div><div class="meta"><div class="name">Lime Dark Mode</div><div class="hex">#C6E86A</div></div></div>
+    </div>
+  </section>
+
+  <!-- 3. NEUTROS -->
+  <section>
+    <h2>3. Neutros (superficies y texto)</h2>
+    <table>
+      <thead><tr><th>Token</th><th>Muestra</th><th>HEX</th><th>Uso</th></tr></thead>
+      <tbody>
+        <tr><td>bg-app</td><td><span class="dot" style="background:#F3F5F6;border:1px solid #ccc;"></span></td><td><code>#F3F5F6</code></td><td>Fondo general</td></tr>
+        <tr><td>bg-surface</td><td><span class="dot" style="background:#FFFFFF;border:1px solid #ccc;"></span></td><td><code>#FFFFFF</code></td><td>Tarjetas, tablas, modales</td></tr>
+        <tr><td>bg-subtle</td><td><span class="dot" style="background:#E7EBEE;"></span></td><td><code>#E7EBEE</code></td><td>Filas alternas, separadores</td></tr>
+        <tr><td>border</td><td><span class="dot" style="background:#D2D8DD;"></span></td><td><code>#D2D8DD</code></td><td>Bordes de inputs, tablas</td></tr>
+        <tr><td>text-primary</td><td><span class="dot" style="background:#17232F;"></span></td><td><code>#17232F</code></td><td>Texto principal</td></tr>
+        <tr><td>text-secondary</td><td><span class="dot" style="background:#4A5A6B;"></span></td><td><code>#4A5A6B</code></td><td>Texto secundario, labels</td></tr>
+        <tr><td>text-muted</td><td><span class="dot" style="background:#8795A3;"></span></td><td><code>#8795A3</code></td><td>Placeholders, deshabilitado</td></tr>
+        <tr><td>text-inverse</td><td><span class="dot" style="background:#FFFFFF;border:1px solid #ccc;"></span></td><td><code>#FFFFFF</code></td><td>Texto sobre fondos oscuros</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 4. ESTADOS OPERATIVOS -->
+  <section>
+    <h2>4. 🚦 Estados operativos del vehículo</h2>
+    <table>
+      <thead><tr><th>Estado</th><th>Color</th><th>HEX</th><th>Fondo suave</th><th>Texto badge</th></tr></thead>
+      <tbody>
+        <tr><td>Activo / En ruta</td><td><span class="dot" style="background:#B8D957;"></span>Lime</td><td><code>#B8D957</code></td><td><code>#E8F2C6</code></td><td><code>#3D5210</code></td></tr>
+        <tr><td>Disponible</td><td><span class="dot" style="background:#2A9D8F;"></span>Teal</td><td><code>#2A9D8F</code></td><td><code>#D9F2EE</code></td><td><code>#0F4C5C</code></td></tr>
+        <tr><td>Detenido / Inactivo</td><td><span class="dot" style="background:#8795A3;"></span>Gris</td><td><code>#8795A3</code></td><td><code>#E7EBEE</code></td><td><code>#293B4B</code></td></tr>
+        <tr><td>En mantenimiento</td><td><span class="dot" style="background:#E9A23B;"></span>Amber</td><td><code>#E9A23B</code></td><td><code>#FBEED4</code></td><td><code>#7A4E0F</code></td></tr>
+        <tr><td>Incidente / Fuera de servicio</td><td><span class="dot" style="background:#E76F51;"></span>Coral</td><td><code>#E76F51</code></td><td><code>#FBE3DC</code></td><td><code>#8A2E1A</code></td></tr>
+        <tr><td>Retraso / Desvío</td><td><span class="dot" style="background:#D18E2A;"></span>Amber oscuro</td><td><code>#D18E2A</code></td><td><code>#FCE8D6</code></td><td><code>#8A4A12</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="badges" style="margin-top:18px;">
+      <span class="badge" style="background:var(--status-active-bg);color:var(--status-active-fg);"><span class="b-dot" style="background:#B8D957;"></span>En ruta</span>
+      <span class="badge" style="background:var(--status-available-bg);color:var(--status-available-fg);"><span class="b-dot" style="background:#2A9D8F;"></span>Disponible</span>
+      <span class="badge" style="background:var(--status-idle-bg);color:var(--status-idle-fg);"><span class="b-dot" style="background:#8795A3;"></span>Detenido</span>
+      <span class="badge" style="background:var(--status-maint-bg);color:var(--status-maint-fg);"><span class="b-dot" style="background:#E9A23B;"></span>Mantenimiento</span>
+      <span class="badge" style="background:var(--status-incident-bg);color:var(--status-incident-fg);"><span class="b-dot" style="background:#E76F51;"></span>Incidente</span>
+      <span class="badge" style="background:var(--status-delay-bg);color:var(--status-delay-fg);"><span class="b-dot" style="background:#D18E2A;"></span>Retraso</span>
+    </div>
+  </section>
+
+  <!-- 5. ALERTAS -->
+  <section>
+    <h2>5. 🔔 Estados de alertas / notificaciones</h2>
+    <table>
+      <thead><tr><th>Nivel</th><th>Color</th><th>HEX</th><th>Fondo</th><th>Uso</th></tr></thead>
+      <tbody>
+        <tr><td>Info</td><td><span class="dot" style="background:#2A9D8F;"></span>Teal</td><td><code>#2A9D8F</code></td><td><code>#D9F2EE</code></td><td>Mensajes informativos, tips</td></tr>
+        <tr><td>Éxito</td><td><span class="dot" style="background:#B8D957;"></span>Lime</td><td><code>#B8D957</code></td><td><code>#E8F2C6</code></td><td>Acción completada</td></tr>
+        <tr><td>Advertencia</td><td><span class="dot" style="background:#E9A23B;"></span>Amber</td><td><code>#E9A23B</code></td><td><code>#FBEED4</code></td><td>Mantenimiento próximo</td></tr>
+        <tr><td>Error / Crítico</td><td><span class="dot" style="background:#E76F51;"></span>Coral</td><td><code>#E76F51</code></td><td><code>#FBE3DC</code></td><td>Fallo, incidente, acción requerida</td></tr>
+      </tbody>
+    </table>
+
+    <div class="badges" style="margin-top:18px;">
+      <span class="badge" style="background:var(--alert-info-bg);color:var(--alert-info-fg);">ℹ Info</span>
+      <span class="badge" style="background:var(--alert-success-bg);color:var(--alert-success-fg);">✓ Éxito</span>
+      <span class="badge" style="background:var(--alert-warn-bg);color:var(--alert-warn-fg);">⚠ Advertencia</span>
+      <span class="badge" style="background:var(--alert-error-bg);color:var(--alert-error-fg);">✕ Error</span>
+    </div>
+  </section>
+
+  <!-- 6. MANTENIMIENTO / DOCUMENTOS -->
+  <section>
+    <h2>6. 📋 Estados de mantenimiento / documentos</h2>
+    <table>
+      <thead><tr><th>Estado</th><th>Color</th><th>HEX</th><th>Uso</th></tr></thead>
+      <tbody>
+        <tr><td>Vigente</td><td><span class="dot" style="background:#B8D957;"></span>Lime</td><td><code>#B8D957</code></td><td>Póliza, licencia, verificación OK</td></tr>
+        <tr><td>Por vencer (30 días)</td><td><span class="dot" style="background:#E9A23B;"></span>Amber</td><td><code>#E9A23B</code></td><td>Requiere atención pronto</td></tr>
+        <tr><td>Vencido</td><td><span class="dot" style="background:#E76F51;"></span>Coral</td><td><code>#E76F51</code></td><td>Documento caducado, urgente</td></tr>
+        <tr><td>No aplica</td><td><span class="dot" style="background:#8795A3;"></span>Gris</td><td><code>#8795A3</code></td><td>Sin documento requerido</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 7. MODO OSCURO -->
+  <section>
+    <h2>7. 🌙 Modo oscuro</h2>
+    <div class="dark-demo">
+      <div class="dark-swatch" style="background:#0F1922;color:#F3F5F6;"><div class="dname">BG App Dark</div><div class="dhex">#0F1922</div></div>
+      <div class="dark-swatch" style="background:#17232F;color:#F3F5F6;"><div class="dname">Surface Dark</div><div class="dhex">#17232F</div></div>
+      <div class="dark-swatch" style="background:#293B4B;color:#F3F5F6;"><div class="dname">Elevated</div><div class="dhex">#293B4B</div></div>
+      <div class="dark-swatch" style="background:#3A4D5F;color:#F3F5F6;"><div class="dname">Border Dark</div><div class="dhex">#3A4D5F</div></div>
+      <div class="dark-swatch" style="background:#9FB0BE;color:#0F1922;"><div class="dname">Text Secondary</div><div class="dhex">#9FB0BE</div></div>
+      <div class="dark-swatch" style="background:#C6E86A;color:#0F1922;"><div class="dname">Lime Dark</div><div class="dhex">#C6E86A</div></div>
+      <div class="dark-swatch" style="background:#5DC4B8;color:#0F1922;"><div class="dname">Teal Dark</div><div class="dhex">#5DC4B8</div></div>
+      <div class="dark-swatch" style="background:#F4A38F;color:#0F1922;"><div class="dname">Coral Dark</div><div class="dhex">#F4A38F</div></div>
+    </div>
+  </section>
+
+  <!-- 8. GRÁFICAS -->
+  <section>
+    <h2>8. 📊 Colores para gráficas / mapas</h2>
+    <div class="chart-row">
+      <div class="chart-item" style="background:#B8D957;color:#17232F;"><span>Serie principal</span><span class="cnum">#B8D957</span></div>
+      <div class="chart-item" style="background:#2A9D8F;"><span>Serie secundaria</span><span class="cnum">#2A9D8F</span></div>
+      <div class="chart-item" style="background:#E9A23B;color:#17232F;"><span>Advertencia</span><span class="cnum">#E9A23B</span></div>
+      <div class="chart-item" style="background:#E76F51;"><span>Alerta / comparación</span><span class="cnum">#E76F51</span></div>
+      <div class="chart-item" style="background:#293B4B;"><span>Serie neutral</span><span class="cnum">#293B4B</span></div>
+      <div class="chart-item" style="background:#5DC4B8;color:#17232F;"><span>Serie suave</span><span class="cnum">#5DC4B8</span></div>
+    </div>
+    <p style="margin-top:14px;font-size:13px;color:var(--text-secondary);">
+      <strong>Mapas:</strong> Ruta óptima <span class="dot" style="background:#B8D957;"></span>
+      Retraso <span class="dot" style="background:#D18E2A;"></span>
+      Incidente <span class="dot" style="background:#E76F51;"></span>
+      Detenido <span class="dot" style="background:#8795A3;"></span>
+      Geocerca / Info <span class="dot" style="background:#2A9D8F;"></span>
+    </p>
+  </section>
+
+  <!-- 9. CONTRASTE -->
+  <section>
+    <h2>9. ♿ Accesibilidad (contraste WCAG)</h2>
+    <div class="contrast-row">
+      <span class="contrast-sample" style="background:#F3F5F6;color:#17232F;">Texto principal</span>
+      <span>#17232F sobre #F3F5F6 → ~14.8:1</span>
+      <span class="pass">✅ AAA</span>
+    </div>
+    <div class="contrast-row">
+      <span class="contrast-sample" style="background:#17232F;color:#FFFFFF;">Sidebar / Graphite</span>
+      <span>#FFFFFF sobre #17232F → ~15.2:1</span>
+      <span class="pass">✅ AAA</span>
+    </div>
+    <div class="contrast-row">
+      <span class="contrast-sample" style="background:#B8D957;color:#17232F;">Botón Lime</span>
+      <span>#17232F sobre #B8D957 → ~9.1:1</span>
+      <span class="pass">✅ AAA</span>
+    </div>
+    <div class="contrast-row">
+      <span class="contrast-sample" style="background:#2A9D8F;color:#FFFFFF;">Botón Teal</span>
+      <span>#FFFFFF sobre #2A9D8F → ~3.9:1</span>
+      <span class="warn">⚠ Solo texto grande</span>
+    </div>
+    <div class="contrast-row">
+      <span class="contrast-sample" style="background:#E76F51;color:#FFFFFF;">Botón Coral</span>
+      <span>#FFFFFF sobre #E76F51 → ~3.7:1</span>
+      <span class="warn">⚠ Solo texto grande</span>
+    </div>
+    <div class="contrast-row">
+      <span class="contrast-sample" style="background:#E8F2C6;color:#3D5210;">Badge activo</span>
+      <span>#3D5210 sobre #E8F2C6 → ~6.8:1</span>
+      <span class="pass">✅ AA</span>
+    </div>
+    <div class="contrast-row">
+      <span class="contrast-sample" style="background:#D9F2EE;color:#0F4C5C;">Badge disponible</span>
+      <span>#0F4C5C sobre #D9F2EE → ~7.2:1</span>
+      <span class="pass">✅ AA</span>
+    </div>
+    <div class="contrast-row">
+      <span class="contrast-sample" style="background:#FBE3DC;color:#8A2E1A;">Badge incidente</span>
+      <span>#8A2E1A sobre #FBE3DC → ~7.9:1</span>
+      <span class="pass">✅ AA</span>
+    </div>
+    <div class="contrast-row">
+      <span class="contrast-sample" style="background:#FBEED4;color:#7A4E0F;">Badge mantenimiento</span>
+      <span>#7A4E0F sobre #FBEED4 → ~6.1:1</span>
+      <span class="pass">✅ AA</span>
+    </div>
+    <p style="margin-top:14px;font-size:12.5px;color:var(--text-muted);">
+      Regla: badges siempre con <strong>texto oscuro sobre fondo suave</strong>. Botones teal/coral solo con texto grande o bold ≥14px.
+    </p>
+  </section>
+
+  <!-- 10. MINI MOCKUP -->
+  <section>
+    <h2>10. 🖥️ Mini ejemplo de UI</h2>
+    <div class="ui-demo">
+      <div class="ui-sidebar">
+        <div class="logo">RODANTEX</div>
+        <div class="nav-item active">📊 Dashboard</div>
+        <div class="nav-item">🚛 Vehículos</div>
+        <div class="nav-item">🗺️ Rutas</div>
+        <div class="nav-item">🔧 Mantenimiento</div>
+        <div class="nav-item">📄 Documentos</div>
+      </div>
+      <div class="ui-main">
+        <h3>Resumen de flota</h3>
+        <div class="ui-cards">
+          <div class="ui-card"><div class="num">128</div><div class="lbl">Vehículos activos</div></div>
+          <div class="ui-card teal"><div class="num">12</div><div class="lbl">Disponibles</div></div>
+          <div class="ui-card amber"><div class="num">5</div><div class="lbl">Mantenimiento</div></div>
+          <div class="ui-card coral"><div class="num">3</div><div class="lbl">Incidentes</div></div>
+        </div>
+        <button class="ui-btn primary">+ Asignar vehículo</button>
+        <button class="ui-btn teal">Ver rutas</button>
+        <button class="ui-btn coral">Reportar</button>
+        <div class="badges" style="margin-top:16px;">
+          <span class="badge" style="background:var(--status-active-bg);color:var(--status-active-fg);"><span class="b-dot" style="background:#B8D957;"></span>En ruta</span>
+          <span class="badge" style="background:var(--status-available-bg);color:var(--status-available-fg);"><span class="b-dot" style="background:#2A9D8F;"></span>Disponible</span>
+          <span class="badge" style="background:var(--status-maint-bg);color:var(--status-maint-fg);"><span class="b-dot" style="background:#E9A23B;"></span>Mantenimiento</span>
+          <span class="badge" style="background:var(--status-incident-bg);color:var(--status-incident-fg);"><span class="b-dot" style="background:#E76F51;"></span>Incidente</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. TOKENS CSS -->
+  <section>
+    <h2>11. 🧩 Tokens CSS listos para copiar</h2>
+    <pre><code><span class="cm">/* ===== ESTRUCTURA (Graphite) ===== */</span>
+--color-primary: <span class="k">#17232F</span>;
+--color-primary-hover: <span class="k">#0F1922</span>;
+--color-primary-light: <span class="k">#293B4B</span>;
+
+<span class="cm">/* ===== ACCIÓN POSITIVA (Lime) ===== */</span>
+--color-secondary: <span class="k">#B8D957</span>;
+--color-secondary-hover: <span class="k">#A6C644</span>;
+--color-secondary-light: <span class="k">#D4E894</span>;
+
+<span class="cm">/* ===== INFO / DISPONIBLE (Teal) ===== */</span>
+--color-info: <span class="k">#2A9D8F</span>;
+--color-info-hover: <span class="k">#21867A</span>;
+--color-info-light: <span class="k">#5DC4B8</span>;
+--color-info-dark: <span class="k">#0F4C5C</span>;
+
+<span class="cm">/* ===== ADVERTENCIA (Amber) ===== */</span>
+--color-accent: <span class="k">#E9A23B</span>;
+--color-accent-hover: <span class="k">#D18E2A</span>;
+--color-accent-light: <span class="k">#F2C77F</span>;
+
+<span class="cm">/* ===== CRÍTICO (Coral) ===== */</span>
+--color-danger: <span class="k">#E76F51</span>;
+--color-danger-hover: <span class="k">#D45A3D</span>;
+--color-danger-light: <span class="k">#F4A38F</span>;
+
+<span class="cm">/* ===== SUPERFICIES ===== */</span>
+--bg-app: <span class="k">#F3F5F6</span>;
+--bg-surface: <span class="k">#FFFFFF</span>;
+--bg-subtle: <span class="k">#E7EBEE</span>;
+--border: <span class="k">#D2D8DD</span>;
+
+<span class="cm">/* ===== TEXTO ===== */</span>
+--text-primary: <span class="k">#17232F</span>;
+--text-secondary: <span class="k">#4A5A6B</span>;
+--text-muted: <span class="k">#8795A3</span>;
+--text-inverse: <span class="k">#FFFFFF</span>;
+--text-on-lime: <span class="k">#17232F</span>;
+
+<span class="cm">/* ===== ESTADOS OPERATIVOS ===== */</span>
+--status-active-bg: <span class="k">#E8F2C6</span>;    --status-active-fg: <span class="k">#3D5210</span>;
+--status-available-bg: <span class="k">#D9F2EE</span>; --status-available-fg: <span class="k">#0F4C5C</span>;
+--status-idle-bg: <span class="k">#E7EBEE</span>;      --status-idle-fg: <span class="k">#293B4B</span>;
+--status-maint-bg: <span class="k">#FBEED4</span>;     --status-maint-fg: <span class="k">#7A4E0F</span>;
+--status-incident-bg: <span class="k">#FBE3DC</span>;  --status-incident-fg: <span class="k">#8A2E1A</span>;
+--status-delay-bg: <span class="k">#FCE8D6</span>;     --status-delay-fg: <span class="k">#8A4A12</span>;
+
+<span class="cm">/* ===== ALERTAS ===== */</span>
+--alert-info-bg: <span class="k">#D9F2EE</span>;    --alert-info-fg: <span class="k">#0F4C5C</span>;
+--alert-success-bg: <span class="k">#E8F2C6</span>; --alert-success-fg: <span class="k">#3D5210</span>;
+--alert-warn-bg: <span class="k">#FBEED4</span>;    --alert-warn-fg: <span class="k">#7A4E0F</span>;
+--alert-error-bg: <span class="k">#FBE3DC</span>;   --alert-error-fg: <span class="k">#8A2E1A</span>;</code></pre>
+  </section>
+
+  <!-- 12. LOGO -->
+  <section>
+    <h2>12. 🏷️ Logo definitivo (brand colors intactos)</h2>
+    <div class="logo-showcase">
+      <div class="logo-card">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 170" width="440" height="144">
+          <g transform="translate(48 25)">
+            <rect width="100" height="100" rx="21" fill="#0F4C5C"/>
+            <rect x="20" y="20" width="25" height="25" rx="6" fill="#2A9D8F"/>
+            <rect x="55" y="20" width="25" height="25" rx="6" fill="#2A9D8F"/>
+            <rect x="20" y="55" width="25" height="25" rx="6" fill="#2A9D8F"/>
+            <path d="M68 55 H80 V80 H55 V68" fill="none" stroke="#E76F51" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <text x="172" y="83" font-family="Manrope, 'Plus Jakarta Sans', sans-serif" font-size="48" font-weight="800" letter-spacing="-1.8" fill="#17232F">Rodantex</text>
+          <text x="175" y="108" font-family="Manrope, sans-serif" font-size="11" font-weight="700" letter-spacing="2.1" fill="#0F4C5C">PLATAFORMA DE GESTIÓN DE FLOTILLAS</text>
+          <text x="175" y="133" font-family="Manrope, sans-serif" font-size="12" font-weight="500" letter-spacing="0.3" fill="#4A5A6B">Control · Gestión · Movilidad</text>
+        </svg>
+      </div>
+      <div class="logo-card dark">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 170" width="440" height="144">
+          <g transform="translate(48 25)">
+            <rect width="100" height="100" rx="21" fill="#0F4C5C"/>
+            <rect x="20" y="20" width="25" height="25" rx="6" fill="#2A9D8F"/>
+            <rect x="55" y="20" width="25" height="25" rx="6" fill="#2A9D8F"/>
+            <rect x="20" y="55" width="25" height="25" rx="6" fill="#2A9D8F"/>
+            <path d="M68 55 H80 V80 H55 V68" fill="none" stroke="#E76F51" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <text x="172" y="83" font-family="Manrope, 'Plus Jakarta Sans', sans-serif" font-size="48" font-weight="800" letter-spacing="-1.8" fill="#F3F5F6">Rodantex</text>
+          <text x="175" y="108" font-family="Manrope, sans-serif" font-size="11" font-weight="700" letter-spacing="2.1" fill="#B8D957">PLATAFORMA DE GESTIÓN DE FLOTILLAS</text>
+          <text x="175" y="133" font-family="Manrope, sans-serif" font-size="12" font-weight="500" letter-spacing="0.3" fill="#9FB0BE">Control · Gestión · Movilidad</text>
+        </svg>
+      </div>
+    </div>
+    <p class="logo-note">
+      El isotipo conserva sus colores originales (<code>#0F4C5C</code>, <code>#2A9D8F</code>, <code>#E76F51</code>) como firma de marca. En la versión dark el wordmark cambia a off-white y el descriptor a lime para máximo contraste sobre graphite.
+    </p>
+  </section>
+
+</div>
+</body>
+</html>
