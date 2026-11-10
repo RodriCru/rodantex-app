@@ -76,13 +76,20 @@ class SecureTokenStorage implements TokenStorage {
   @override
   Future<void> saveSession(AuthSession session) async {
     await saveTokens(session.tokens);
-    _user = session.user;
+    await saveUser(session.user);
+  }
+
+  /// Guarda cambios del perfil sin modificar los tokens existentes.
+  Future<void> saveUser(UserProfile user) async {
+    _user = user;
     await _storage.write(
       key: _userKey,
       value: jsonEncode({
-        'name': session.user.name,
-        'role': session.user.role.apiValue,
-        'tenant': session.user.tenant,
+        'id': user.id,
+        'name': user.name,
+        'email': user.email,
+        'role': user.role.apiValue,
+        'tenant': user.tenant,
       }),
     );
   }

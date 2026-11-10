@@ -77,6 +77,19 @@ class _Adapter implements HttpClientAdapter {
         },
       );
     }
+    if (options.path.startsWith('dashboard/')) {
+      return ResponseBody.fromString(
+        jsonEncode({
+          'codigo': 200,
+          'mensaje': 'OK',
+          'resultado': {'total': 0, 'items': <dynamic>[], 'months': <dynamic>[]},
+        }),
+        200,
+        headers: {
+          Headers.contentTypeHeader: [Headers.jsonContentType],
+        },
+      );
+    }
     return ResponseBody.fromString(
       jsonEncode({'message': 'Credenciales inválidas'}),
       401,
@@ -102,6 +115,7 @@ Future<AuthController> _boot(
   await tester.pumpWidget(
     AuthScope(
       auth: auth,
+      apiClient: client,
       child: MaterialApp.router(
         theme: RodantexTheme.light,
         routerConfig: appRouter.router,
@@ -132,7 +146,13 @@ void main() {
     await tester.tap(find.text('Entrar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Hola, Juan Alberto'), findsOneWidget);
+    // Al entrar se abre el dashboard; el nombre va en el saludo y el rol en el
+    // menú de sesión del AppBar.
+    expect(find.text('Hola, Juan'), findsOneWidget);
+    expect(find.text('Tenant de prueba'), findsOneWidget);
+    expect(find.text('Rodantex'), findsOneWidget);
+    await tester.tap(find.byTooltip('Juan Alberto'));
+    await tester.pumpAndSettle();
     expect(find.text('Propietario'), findsOneWidget);
   });
 

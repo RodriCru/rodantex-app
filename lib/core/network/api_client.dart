@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:rodantex_app/core/config/api_config.dart';
 import 'package:rodantex_app/core/auth/models/auth_session.dart';
 import 'package:rodantex_app/core/auth/token_storage.dart';
+// `auth_api.dart` re-exporta `api_exception.dart` (SessionExpiredException, ApiException).
 import 'package:rodantex_app/core/auth/data/auth_api.dart';
 
 /// Cliente HTTP único de la app.
@@ -59,8 +60,78 @@ class ApiClient {
   Future<Response<T>> put<T>(String path, {Object? data}) =>
       _dio.put<T>(path, data: data);
 
+  /// Envía una actualización parcial a un endpoint que usa HTTP PATCH.
+  Future<Response<T>> patch<T>(String path, {Object? data}) =>
+      _dio.patch<T>(path, data: data);
+
   Future<Response<T>> delete<T>(String path, {Object? data}) =>
       _dio.delete<T>(path, data: data);
+
+  /// Desempaqueta la envoltura estándar del backend `{codigo, mensaje, resultado}`
+  /// y devuelve solo `resultado` como `Map<String, dynamic>`.
+  ///
+  /// Uso en los repositories (ver `docs/CONTRATO_API_UI.md` §1.2):
+  /// ```dart
+  /// final res = await _client.get<Map<String, dynamic>>('vehiculos/$id');
+  /// return Vehicle.fromJson(_client.unwrap(res.data));
+  /// ```
+  ///
+  /// - Si `data` **no** trae la envoltura (p. ej. endpoints `api/v1/auth/*`),
+  ///   lo devuelve tal cual.
+  /// - Si `resultado` es `null` (respuesta de éxito sin cuerpo), lanza
+  ///   [ApiException] para no propagar un crash críptico de casting.
+  /// - Si `resultado` no es un objeto, también lanza [ApiException].
+  Map<String, dynamic> unwrap(Object? data) {
+    if (data is! Map) {
+      throw const ApiException(
+        'La respuesta del servidor no tiene el formato esperado.',
+      );
+    }
+
+    final map = data.cast<String, dynamic>();
+    if (!map.containsKey('resultado')) return map;
+
+    final resultado = map['resultado'];
+    if (resultado is Map) return resultado.cast<String, dynamic>();
+
+    throw ApiException(
+      map['mensaje'] as String? ??
+          'La respuesta del servidor no tiene el formato esperado.',
+      statusCode: _asInt(map['codigo']),
+    );
+  }
+
+  /// Desempaqueta `resultado` cuando es una lista (endpoints que no paginan).
+  /// Si `resultado` es `null`, devuelve una lista vacía.
+  List<Map<String, dynamic>> unwrapList(Object? data) {
+    if (data is! Map) {
+      throw const ApiException(
+        'La respuesta del servidor no tiene el formato esperado.',
+      );
+    }
+
+    final map = data.cast<String, dynamic>();
+    final resultado = map.containsKey('resultado') ? map['resultado'] : data;
+    if (resultado == null) return const [];
+    if (resultado is List) {
+      return resultado.whereType<Map<String, dynamic>>().toList(
+        growable: false,
+      );
+    }
+
+    throw ApiException(
+      map['mensaje'] as String? ??
+          'La respuesta del servidor no tiene el formato esperado.',
+      statusCode: _asInt(map['codigo']),
+    );
+  }
+
+  static int? _asInt(Object? value) => switch (value) {
+    final int v => v,
+    final num v => v.toInt(),
+    final String v => int.tryParse(v),
+    _ => null,
+  };
 
   /// Refresh en curso; varias requests que fallan a la vez lo comparten.
   Future<AuthTokens>? _refreshing;

@@ -18,13 +18,16 @@ Future<void> main() async {
   // Restaura la sesión guardada antes de resolver la primera ruta.
   await auth.restore();
 
-  runApp(RodantexApp(auth: auth));
+  runApp(RodantexApp(auth: auth, apiClient: client));
 }
 
 class RodantexApp extends StatefulWidget {
-  const RodantexApp({super.key, required this.auth});
+  const RodantexApp({super.key, required this.auth, required this.apiClient});
 
   final AuthController auth;
+
+  /// Cliente HTTP compartido por los repositories de las features.
+  final ApiClient apiClient;
 
   @override
   State<RodantexApp> createState() => _RodantexAppState();
@@ -46,6 +49,7 @@ class _RodantexAppState extends State<RodantexApp> {
 
     return AuthScope(
       auth: widget.auth,
+      apiClient: widget.apiClient,
       child: MaterialApp.router(
         title: 'Rodantex',
         debugShowCheckedModeBanner: false,

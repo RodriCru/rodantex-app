@@ -48,10 +48,11 @@ class ApiException implements Exception {
     );
   }
 
-  /// El backend puede responder `{message}` o `{error}`.
+  /// El backend puede responder `{mensaje}` (formato envuelto estándar de la
+  /// app), `{message}` o `{error}`. Se revisan en ese orden.
   static String? _readMessage(Object? data) {
     if (data is Map) {
-      for (final key in const ['message', 'error', 'detail']) {
+      for (final key in const ['mensaje', 'message', 'error', 'detail']) {
         final value = data[key];
         if (value is String && value.trim().isNotEmpty) return value.trim();
       }
@@ -59,10 +60,15 @@ class ApiException implements Exception {
     return null;
   }
 
+  /// El backend envuelto manda `codigo` (código HTTP); otros, `code`.
   static String? _readCode(Object? data) {
     if (data is Map) {
-      final value = data['code'];
-      if (value is String && value.isNotEmpty) return value;
+      for (final key in const ['code', 'codigo']) {
+        final value = data[key];
+        if (value == null) continue;
+        if (value is String && value.isNotEmpty) return value;
+        if (value is num) return value.toString();
+      }
     }
     return null;
   }

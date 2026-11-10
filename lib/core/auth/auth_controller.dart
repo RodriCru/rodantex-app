@@ -33,16 +33,21 @@ class AuthController extends ChangeNotifier {
   bool get isAuthenticated => _status == AuthStatus.authenticated;
 
   /// Recupera la sesión guardada al arrancar la app.
+  ///
+  /// Acepta cualquier [TokenStorage]: el seguro lee del Keychain/Keystore y
+  /// otras implementaciones (tests, memoria) ya tienen la sesión cargada.
   Future<void> restore() async {
     final storage = _storage;
     if (storage is SecureTokenStorage) {
       await storage.restore();
-      if (storage.hasSession) {
-        _user = storage.user;
-        _status = AuthStatus.authenticated;
-        notifyListeners();
-        return;
-      }
+    }
+    if (storage.accessToken?.isNotEmpty == true &&
+        storage.refreshToken?.isNotEmpty == true &&
+        storage.user != null) {
+      _user = storage.user;
+      _status = AuthStatus.authenticated;
+      notifyListeners();
+      return;
     }
     _status = AuthStatus.unauthenticated;
     notifyListeners();
@@ -71,6 +76,19 @@ class AuthController extends ChangeNotifier {
   Future<void> logout() async {
     await _client.authApi.logout();
     await _clearSession();
+  }
+
+  /// Actualiza el perfil actual y lo persiste cuando se usa almacenamiento seguro.
+  Future<void> updateProfile(UserProfile profile) async {
+    final current = _user;
+    final updated = profile.copyWith(
+      tenant: profile.tenant.isEmpty ? current?.tenant : profile.tenant,
+    );
+    if (_storage is SecureTokenStorage) {
+      await _storage.saveUser(updated);
+    }
+    _user = updated;
+    notifyListeners();
   }
 
   Future<void> _handleSessionExpired() async {
