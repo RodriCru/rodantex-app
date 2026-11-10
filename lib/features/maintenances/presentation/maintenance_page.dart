@@ -298,6 +298,7 @@ class _MaintenanceFormDialogState extends State<MaintenanceFormDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
+    scrollable: true,
     title: Text(
       widget.initial == null
           ? 'Registrar mantenimiento'
@@ -324,7 +325,7 @@ class _MaintenanceFormDialogState extends State<MaintenanceFormDialog> {
                       decoration: InputDecoration(
                         labelText: 'Fecha del mantenimiento',
                         labelStyle: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.w700,
                         ),
                         suffixIcon: const Icon(Icons.calendar_month_outlined),
@@ -396,7 +397,7 @@ class _MaintenanceFormDialogState extends State<MaintenanceFormDialog> {
       InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.onSurface,
           fontWeight: FontWeight.w700,
         ),
       );

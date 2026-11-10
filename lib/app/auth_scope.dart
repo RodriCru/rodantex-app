@@ -7,6 +7,7 @@ import 'package:rodantex_app/features/maintenances/data/maintenance_repository.d
 import 'package:rodantex_app/features/inspections/data/inspection_repository.dart';
 import 'package:rodantex_app/features/profile/data/profile_repository.dart';
 import 'package:rodantex_app/features/vehicles/data/vehicle_repository.dart';
+import 'package:rodantex_app/features/routes/data/routes_repository.dart';
 
 /// Expone las dependencias globales ([AuthController] y [ApiClient]) a todo el
 /// árbol, incluidas las rutas de go_router, sin pasarlas widget a widget.
@@ -41,6 +42,10 @@ class AuthScope extends InheritedWidget {
   /// Repository de vehículos conectado al cliente HTTP compartido.
   static VehicleRepository vehicleRepository(BuildContext context) =>
       VehicleRepository(_of(context).apiClient);
+
+  /// Repository de consulta de rutas y viajes.
+  static RoutesRepository routesRepository(BuildContext context) =>
+      RoutesRepository(_of(context).apiClient);
 
   /// Repository de servicios de mantenimiento conectado al cliente compartido.
   static MaintenanceRepository maintenanceRepository(BuildContext context) =>

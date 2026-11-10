@@ -367,6 +367,7 @@ class _MaintenanceFormDialogState extends State<_MaintenanceFormDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
+    scrollable: true,
     title: Text(
       widget.initial == null
           ? 'Registrar mantenimiento'
@@ -430,7 +431,7 @@ class _MaintenanceFormDialogState extends State<_MaintenanceFormDialog> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.onSurface,
           fontWeight: FontWeight.w700,
         ),
         suffixIcon: IconButton(
@@ -464,7 +465,7 @@ class _MaintenanceFormDialogState extends State<_MaintenanceFormDialog> {
           decoration: InputDecoration(
             labelText: 'Aseguradora (opcional)',
             labelStyle: TextStyle(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w700,
             ),
             helperText: snapshot.hasError
@@ -500,7 +501,7 @@ class _MaintenanceFormDialogState extends State<_MaintenanceFormDialog> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.onSurface,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -527,7 +528,7 @@ class _MaintenanceFormDialogState extends State<_MaintenanceFormDialog> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.onSurface,
           fontWeight: FontWeight.w700,
         ),
       ),

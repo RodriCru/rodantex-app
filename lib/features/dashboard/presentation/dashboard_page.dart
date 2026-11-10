@@ -5,26 +5,17 @@ import 'package:rodantex_app/core/auth/user_role.dart';
 import 'package:rodantex_app/core/theme/rodantex_colors.dart';
 import 'package:rodantex_app/core/theme/rodantex_palette.dart';
 import 'package:rodantex_app/features/dashboard/data/dashboard_repository.dart';
-import 'package:rodantex_app/features/dashboard/data/models/spending_summary.dart';
-import 'package:rodantex_app/features/dashboard/data/models/summary.dart';
 import 'package:rodantex_app/features/dashboard/presentation/dashboard_controller.dart';
 import 'package:rodantex_app/features/dashboard/presentation/load_status.dart';
-import 'package:rodantex_app/features/dashboard/presentation/money_formatter.dart';
 import 'package:rodantex_app/features/dashboard/presentation/widgets/dashboard_section.dart';
 import 'package:rodantex_app/features/dashboard/presentation/widgets/fleet_breakdown_card.dart';
-import 'package:rodantex_app/features/dashboard/presentation/widgets/kpi_card.dart';
 import 'package:rodantex_app/features/dashboard/presentation/widgets/maintenance_card.dart';
-import 'package:rodantex_app/features/dashboard/presentation/widgets/spending_chart.dart';
-import 'package:rodantex_app/features/dashboard/presentation/widgets/spending_formatters.dart';
-import 'package:rodantex_app/features/dashboard/presentation/widgets/staff_card.dart';
 
 /// Pantalla de inicio: el dashboard que ve el usuario al entrar.
 ///
-/// Estructura (se adapta de 1 a 3 columnas según el ancho):
+/// Estructura (se adapta de 1 a 2 columnas según el ancho):
 /// 1. Saludo y periodo del resumen.
-/// 2. KPIs: flota, gasto en llantas, gasto en mantenimiento y personal.
-/// 3. Gráfica de gasto mensual + estado de la flota.
-/// 4. Vehículos en mantenimiento + personal.
+/// 2. Estado de la flota y vehículos en mantenimiento.
 class DashboardPage extends StatefulWidget {
   const DashboardPage({
     super.key,
@@ -42,13 +33,6 @@ class DashboardPage extends StatefulWidget {
     UserRole.superAdmin,
     UserRole.owner,
     UserRole.manager,
-    UserRole.accountant,
-  };
-
-  /// Roles que además ven las cifras económicas del periodo.
-  static const spendingRoles = {
-    UserRole.superAdmin,
-    UserRole.owner,
     UserRole.accountant,
   };
 
@@ -78,9 +62,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   bool get _canView => DashboardPage.allowedRoles.contains(widget.auth.role);
 
-  bool get _canSeeSpending =>
-      DashboardPage.spendingRoles.contains(widget.auth.role);
-
   Future<void> _refresh() => _controller.load(refresh: true);
 
   @override
@@ -107,7 +88,8 @@ class _DashboardPageState extends State<DashboardPage> {
       body: ListenableBuilder(
         listenable: _controller,
         builder: (context, _) {
-          if (_controller.isLoading && _controller.summaryStatus != LoadStatus.success) {
+          if (_controller.isLoading &&
+              _controller.summaryStatus != LoadStatus.success) {
             return const _DashboardSkeleton();
           }
           return RefreshIndicator(
@@ -115,7 +97,6 @@ class _DashboardPageState extends State<DashboardPage> {
             child: _DashboardContent(
               controller: _controller,
               auth: widget.auth,
-              canSeeSpending: _canSeeSpending,
             ),
           );
         },
@@ -197,7 +178,10 @@ class _UserMenu extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(auth.user?.name ?? 'Usuario', style: theme.textTheme.titleSmall),
+              Text(
+                auth.user?.name ?? 'Usuario',
+                style: theme.textTheme.titleSmall,
+              ),
               Text(
                 auth.role.label,
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -236,15 +220,10 @@ class _UserMenu extends StatelessWidget {
 
 /// Contenido con scroll: el layout que comparten todas las tarjetas.
 class _DashboardContent extends StatelessWidget {
-  const _DashboardContent({
-    required this.controller,
-    required this.auth,
-    required this.canSeeSpending,
-  });
+  const _DashboardContent({required this.controller, required this.auth});
 
   final DashboardController controller;
   final AuthController auth;
-  final bool canSeeSpending;
 
   @override
   Widget build(BuildContext context) {
@@ -254,12 +233,8 @@ class _DashboardContent extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // > 1100 px: 3 columnas · > 760 px: 2 columnas · resto: 1 columna.
-        final columns = constraints.maxWidth >= 1100
-            ? 3
-            : constraints.maxWidth >= 760
-            ? 2
-            : 1;
+        // En móviles usa una columna; en pantallas amplias, dos.
+        final columns = constraints.maxWidth >= 760 ? 2 : 1;
         final gap = 16.0;
 
         /// Reparte [items] en filas de hasta [columns] tarjetas del mismo ancho.
@@ -279,7 +254,10 @@ class _DashboardContent extends StatelessWidget {
           }
           final rows = <Widget>[];
           for (var i = 0; i < items.length; i += columns) {
-            final chunk = items.sublist(i, (i + columns).clamp(0, items.length));
+            final chunk = items.sublist(
+              i,
+              (i + columns).clamp(0, items.length),
+            );
             rows.add(
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -315,45 +293,11 @@ class _DashboardContent extends StatelessWidget {
               style: theme.textTheme.headlineSmall,
             ),
             const SizedBox(height: 2),
-            Text(
-              _subtitle(),
-              style: theme.textTheme.bodyMedium,
-            ),
+            Text(_subtitle(), style: theme.textTheme.bodyMedium),
             const SizedBox(height: 20),
             grid([
-              _KpiFleet(
-                status: controller.summaryStatus,
-                summary: controller.summary,
-              ),
-              canSeeSpending
-                  ? _KpiSpending(
-                      title: 'Gasto en llantas',
-                      icon: Icons.tire_repair_rounded,
-                      status: controller.summaryStatus,
-                      summary: controller.summary,
-                      select: (s) => s.tireSpending,
-                    )
-                  : _kpiRestricted('Gasto en llantas', Icons.tire_repair_rounded),
-              canSeeSpending
-                  ? _KpiSpending(
-                      title: 'Gasto en mantenimiento',
-                      icon: Icons.build_circle_outlined,
-                      status: controller.summaryStatus,
-                      summary: controller.summary,
-                      select: (s) => s.maintenanceSpending,
-                    )
-                  : _kpiRestricted(
-                      'Gasto en mantenimiento',
-                      Icons.build_circle_outlined,
-                    ),
-              _StaffKpi(status: controller.summaryStatus, summary: controller.summary),
-            ]),
-            SizedBox(height: gap),
-            grid([
-              _SpendingSection(controller: controller),
               _FleetSection(controller: controller),
               _MaintenanceSection(controller: controller),
-              _StaffSection(controller: controller),
             ]),
           ],
         );
@@ -364,154 +308,6 @@ class _DashboardContent extends StatelessWidget {
   String _subtitle() {
     final period = controller.summary?.periodLabel ?? '';
     return period.isEmpty ? 'Resumen de tu operación' : 'Periodo $period';
-  }
-
-  Widget _kpiRestricted(String title, IconData icon) {
-    return KpiCard(
-      label: title,
-      value: '—',
-      icon: icon,
-      accentTone: RodantexBadgeTone.idle,
-      footer: const Text('Solo administración'),
-    );
-  }
-}
-
-/// KPI "Vehículos" con el desglose operativos / en taller.
-class _KpiFleet extends StatelessWidget {
-  const _KpiFleet({required this.status, required this.summary});
-
-  final LoadStatus status;
-  final Summary? summary;
-
-  @override
-  Widget build(BuildContext context) {
-    final fleet = summary?.fleet;
-    return KpiCard(
-      label: 'Vehículos',
-      value: status == LoadStatus.loading || fleet == null ? '—' : '${fleet.total}',
-      icon: Icons.local_shipping_rounded,
-      accentTone: RodantexBadgeTone.active,
-      footer: fleet == null
-          ? null
-          : Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                TrendPill(
-                  icon: Icons.check_circle_outline_rounded,
-                  label: '${fleet.operational} operativos',
-                  tone: RodantexBadgeTone.available,
-                ),
-                TrendPill(
-                  icon: Icons.build_rounded,
-                  label: '${fleet.inMaintenance} en taller',
-                  tone: fleet.inMaintenance > 0
-                      ? RodantexBadgeTone.maintenance
-                      : RodantexBadgeTone.idle,
-                ),
-              ],
-            ),
-    );
-  }
-}
-
-/// KPI de dinero del periodo (llantas o mantenimiento) con su tendencia.
-class _KpiSpending extends StatelessWidget {
-  const _KpiSpending({
-    required this.title,
-    required this.icon,
-    required this.status,
-    required this.summary,
-    required this.select,
-  });
-
-  final String title;
-  final IconData icon;
-  final LoadStatus status;
-  final Summary? summary;
-  final SpendingSummary Function(Summary) select;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final data = summary == null ? null : select(summary!);
-    final loading = status == LoadStatus.loading || data == null;
-
-    Widget? footer;
-    if (data != null) {
-      final label = data.changeLabel;
-      final color = data.tone.color(scheme);
-      footer = Wrap(
-        spacing: 6,
-        runSpacing: 6,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          if (label != null)
-            TrendPill(
-              icon: data.trendIcon,
-              label: label,
-              tone: switch (data.tone) {
-                ChangeTone.positive => RodantexBadgeTone.available,
-                ChangeTone.negative => RodantexBadgeTone.maintenance,
-                ChangeTone.neutral => RodantexBadgeTone.idle,
-              },
-            ),
-          Text(
-            switch ((label, data.trend)) {
-              (null, _) => 'Sin periodo previo',
-              (_, 'UP') => 'más que el periodo anterior',
-              (_, 'DOWN') => 'menos que el periodo anterior',
-              _ => 'igual que el periodo anterior',
-            },
-            style: Theme.of(
-              context,
-            ).textTheme.labelSmall?.copyWith(color: color),
-          ),
-        ],
-      );
-    }
-
-    return KpiCard(
-      label: title,
-      value: loading
-          ? '—'
-          : MoneyFormatter.format(data.amount, currency: summary!.currency),
-      icon: icon,
-      accentTone: RodantexBadgeTone.maintenance,
-      footer: footer,
-    );
-  }
-}
-
-class _SpendingSection extends StatelessWidget {
-  const _SpendingSection({required this.controller});
-
-  final DashboardController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final history = controller.spending;
-    return DashboardSection(
-      title: 'Gasto mensual',
-      subtitle: history == null
-          ? 'Compras vs. mantenimiento'
-          : 'Compras vs. mantenimiento · últimos ${history.months.length} meses',
-      child: switch (controller.spendingStatus) {
-        LoadStatus.loading || LoadStatus.idle => const SkeletonCard(height: 190),
-        LoadStatus.failure => ErrorRetry(
-          message: controller.spendingError ?? 'No se pudo cargar el gasto.',
-          onRetry: () => controller.load(refresh: true),
-        ),
-        LoadStatus.empty => const EmptyState(
-          icon: Icons.bar_chart_rounded,
-          title: 'Sin movimientos de gasto',
-          description: 'Aún no hay compras ni mantenimientos en el periodo',
-          tone: RodantexBadgeTone.idle,
-        ),
-        LoadStatus.success => SpendingChart(history: history!),
-      },
-    );
   }
 }
 
@@ -524,11 +320,12 @@ class _FleetSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final summary = controller.summary;
     return switch (controller.summaryStatus) {
-      LoadStatus.loading || LoadStatus.idle || LoadStatus.empty =>
-        const DashboardSection(
-          title: 'Estado de la flota',
-          child: SkeletonCard(height: 190),
-        ),
+      LoadStatus.loading ||
+      LoadStatus.idle ||
+      LoadStatus.empty => const DashboardSection(
+        title: 'Estado de la flota',
+        child: SkeletonCard(height: 190),
+      ),
       LoadStatus.failure => DashboardSection(
         title: 'Estado de la flota',
         child: ErrorRetry(
@@ -537,71 +334,6 @@ class _FleetSection extends StatelessWidget {
         ),
       ),
       LoadStatus.success => FleetBreakdownCard(fleet: summary!.fleet),
-    };
-  }
-}
-
-/// KPI "Personal" con la composición por tipo de colaborador.
-class _StaffKpi extends StatelessWidget {
-  const _StaffKpi({required this.status, required this.summary});
-
-  final LoadStatus status;
-  final Summary? summary;
-
-  @override
-  Widget build(BuildContext context) {
-    final staff = summary?.staff;
-    return KpiCard(
-      label: 'Personal',
-      value: status == LoadStatus.loading || staff == null ? '—' : '${staff.total}',
-      icon: Icons.group_rounded,
-      accentTone: RodantexBadgeTone.available,
-      footer: staff == null
-          ? null
-          : Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                TrendPill(
-                  icon: Icons.badge_outlined,
-                  label: '${staff.drivers} conductores',
-                  tone: RodantexBadgeTone.available,
-                ),
-                TrendPill(
-                  icon: Icons.build_outlined,
-                  label: '${staff.mechanics} mecánicos',
-                  tone: staff.mechanics > 0
-                      ? RodantexBadgeTone.maintenance
-                      : RodantexBadgeTone.idle,
-                ),
-              ],
-            ),
-    );
-  }
-}
-
-class _StaffSection extends StatelessWidget {
-  const _StaffSection({required this.controller});
-
-  final DashboardController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final summary = controller.summary;
-    return switch (controller.summaryStatus) {
-      LoadStatus.loading || LoadStatus.idle || LoadStatus.empty =>
-        const DashboardSection(
-          title: 'Personal',
-          child: SkeletonCard(height: 150),
-        ),
-      LoadStatus.failure => DashboardSection(
-        title: 'Personal',
-        child: ErrorRetry(
-          message: controller.summaryError ?? 'No se pudo cargar el personal.',
-          onRetry: () => controller.load(refresh: true),
-        ),
-      ),
-      LoadStatus.success => StaffCard(staff: summary!.staff),
     };
   }
 }
@@ -646,28 +378,9 @@ class _DashboardSkeleton extends StatelessWidget {
       children: const [
         SkeletonCard(height: 44),
         SizedBox(height: 20),
-        _SkeletonRow(),
-        SizedBox(height: 16),
         SkeletonCard(height: 220),
         SizedBox(height: 16),
         SkeletonCard(height: 180),
-      ],
-    );
-  }
-}
-
-class _SkeletonRow extends StatelessWidget {
-  const _SkeletonRow();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        Expanded(child: SkeletonCard(height: 140)),
-        SizedBox(width: 16),
-        Expanded(child: SkeletonCard(height: 140)),
-        SizedBox(width: 16),
-        Expanded(child: SkeletonCard(height: 140)),
       ],
     );
   }

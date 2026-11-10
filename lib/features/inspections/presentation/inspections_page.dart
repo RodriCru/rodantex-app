@@ -5,6 +5,7 @@ import 'package:rodantex_app/app/routes.dart';
 import 'package:rodantex_app/core/network/api_exception.dart';
 import 'package:rodantex_app/features/inspections/data/inspection_repository.dart';
 import 'package:rodantex_app/features/inspections/data/models/inspection.dart';
+import 'package:rodantex_app/features/inspections/data/models/inspection_rules.dart';
 import 'package:rodantex_app/features/inspections/data/models/inspection_tire.dart';
 import 'package:rodantex_app/features/vehicles/data/models/vehicle.dart';
 
@@ -139,7 +140,7 @@ class _InspectionsPageState extends State<InspectionsPage> {
                 decoration: InputDecoration(
                   labelText: 'Vehículo',
                   labelStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -282,14 +283,35 @@ class InspectionFormDialog extends StatefulWidget {
 class _InspectionFormDialogState extends State<InspectionFormDialog> {
   final _formKey = GlobalKey<FormState>();
   final _description = TextEditingController();
-  late final Future<List<VehicleInspectionTire>> _vehicleTires = widget
-      .repository
-      .tiresForVehicle(widget.vehicleId);
+  late final Future<_InspectionSetup> _setup = _loadSetup();
   DateTime? _date;
   List<_TireDraft> _drafts = [];
   bool _draftsInitialized = false;
   bool _saving = false;
   String? _error;
+
+  Future<_InspectionSetup> _loadSetup() async {
+    final results = await Future.wait([
+      widget.repository.vehicles(),
+      widget.repository.tiresForVehicle(widget.vehicleId),
+    ]);
+    final vehicles = results[0] as List<Vehicle>;
+    final tires = results[1] as List<VehicleInspectionTire>;
+    Vehicle? vehicle;
+    for (final item in vehicles) {
+      if (item.id == widget.vehicleId) {
+        vehicle = item;
+        break;
+      }
+    }
+    if (vehicle == null || (vehicle.carType ?? '').isEmpty) {
+      throw ApiException(
+        'No se pudo determinar el tipo de vehículo para aplicar las reglas.',
+      );
+    }
+    final rules = await widget.repository.getRules(carType: vehicle.carType);
+    return _InspectionSetup(tires: tires, rules: rules);
+  }
 
   @override
   void initState() {
@@ -338,6 +360,17 @@ class _InspectionFormDialogState extends State<InspectionFormDialog> {
       setState(() => _error = 'Selecciona al menos una llanta.');
       return;
     }
+    if (selected.any(
+      (draft) =>
+          draft.average == null ||
+          _setupRules == null ||
+          _setupRules!.statusForAverage(draft.average!) == null,
+    )) {
+      setState(
+        () => _error = 'Completa las tres mediciones y verifica que existan reglas para el vehículo.',
+      );
+      return;
+    }
     setState(() {
       _saving = true;
       _error = null;
@@ -358,7 +391,9 @@ class _InspectionFormDialogState extends State<InspectionFormDialog> {
               'secondReading': double.tryParse(draft.secondReading.text.trim()),
             if (draft.thirdReading.text.trim().isNotEmpty)
               'thirdReading': double.tryParse(draft.thirdReading.text.trim()),
-            'inspectionStatusTire': draft.status.apiValue,
+            'inspectionStatusTire': _setupRules!
+                .statusForAverage(draft.average!)!
+                .apiValue,
             if (draft.note.text.trim().isNotEmpty)
               'note': draft.note.text.trim(),
           },
@@ -379,6 +414,8 @@ class _InspectionFormDialogState extends State<InspectionFormDialog> {
     }
   }
 
+  InspectionRules? _setupRules;
+
   void _initializeDrafts(List<VehicleInspectionTire> tires) {
     if (_draftsInitialized) return;
     _drafts = tires.map(_TireDraft.forVehicleTire).toList();
@@ -387,6 +424,7 @@ class _InspectionFormDialogState extends State<InspectionFormDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
+    scrollable: true,
     title: Text(
       widget.initial == null ? 'Nueva inspección' : 'Editar inspección',
     ),
@@ -394,8 +432,8 @@ class _InspectionFormDialogState extends State<InspectionFormDialog> {
       width: 540,
       child: Form(
         key: _formKey,
-        child: FutureBuilder<List<VehicleInspectionTire>>(
-          future: _vehicleTires,
+        child: FutureBuilder<_InspectionSetup>(
+          future: _setup,
           builder: (context, tireSnapshot) {
             if (widget.initial == null &&
                 tireSnapshot.connectionState != ConnectionState.done) {
@@ -412,8 +450,10 @@ class _InspectionFormDialogState extends State<InspectionFormDialog> {
               );
             }
             if (widget.initial == null) {
-              _initializeDrafts(tireSnapshot.data ?? const []);
+              _initializeDrafts(tireSnapshot.data?.tires ?? const []);
             }
+            final rules = tireSnapshot.data?.rules ?? _setupRules;
+            _setupRules = rules;
             return SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -429,7 +469,7 @@ class _InspectionFormDialogState extends State<InspectionFormDialog> {
                           decoration: InputDecoration(
                             labelText: 'Fecha de inspección',
                             labelStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.w700,
                             ),
                             suffixIcon: const Icon(
@@ -464,6 +504,7 @@ class _InspectionFormDialogState extends State<InspectionFormDialog> {
                       _TireDraftFields(
                         key: ValueKey(draft.tireId),
                         draft: draft,
+                        rules: rules,
                         locked: widget.initial != null,
                         onChanged: () => setState(() {}),
                       ),
@@ -505,10 +546,17 @@ class _InspectionFormDialogState extends State<InspectionFormDialog> {
       InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.onSurface,
           fontWeight: FontWeight.w700,
         ),
       );
+}
+
+class _InspectionSetup {
+  const _InspectionSetup({required this.tires, required this.rules});
+
+  final List<VehicleInspectionTire> tires;
+  final InspectionRules rules;
 }
 
 class _TireDraft {
@@ -519,15 +567,13 @@ class _TireDraft {
     this.firstValue,
     this.secondValue,
     this.thirdValue,
-    InspectionTireStatus initialStatus = InspectionTireStatus.optimal,
     String? initialNote,
   }) : firstReading = TextEditingController(text: firstValue?.toString() ?? ''),
        secondReading = TextEditingController(
          text: secondValue?.toString() ?? '',
        ),
        thirdReading = TextEditingController(text: thirdValue?.toString() ?? ''),
-       note = TextEditingController(text: initialNote ?? ''),
-       status = initialStatus;
+       note = TextEditingController(text: initialNote ?? '');
 
   factory _TireDraft.forVehicleTire(VehicleInspectionTire tire) =>
       _TireDraft(tireId: tire.id, label: tire.displayName);
@@ -539,7 +585,6 @@ class _TireDraft {
     firstValue: tire.firstReading,
     secondValue: tire.secondReading,
     thirdValue: tire.thirdReading,
-    initialStatus: tire.status,
     initialNote: tire.note,
   );
 
@@ -553,8 +598,17 @@ class _TireDraft {
   final TextEditingController secondReading;
   final TextEditingController thirdReading;
   final TextEditingController note;
-  InspectionTireStatus status;
   bool selected = true;
+
+  double? get average {
+    final values = [
+      firstReading.text,
+      secondReading.text,
+      thirdReading.text,
+    ].map((value) => double.tryParse(value.trim())).toList();
+    if (values.any((value) => value == null)) return null;
+    return values.cast<double>().reduce((a, b) => a + b) / 3;
+  }
 
   void dispose() {
     firstReading.dispose();
@@ -568,11 +622,13 @@ class _TireDraftFields extends StatelessWidget {
   const _TireDraftFields({
     super.key,
     required this.draft,
+    required this.rules,
     required this.locked,
     required this.onChanged,
   });
 
   final _TireDraft draft;
+  final InspectionRules? rules;
   final bool locked;
   final VoidCallback onChanged;
 
@@ -602,58 +658,73 @@ class _TireDraftFields extends StatelessWidget {
               ),
             ],
           ),
-          Row(
-            children: [
-              for (final field in [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final fields = [
                 ('Medición 1', draft.firstReading),
                 ('Medición 2', draft.secondReading),
                 ('Medición 3', draft.thirdReading),
-              ])
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: TextFormField(
-                      controller: field.$2,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      decoration: InputDecoration(
-                        labelText: field.$1,
-                        labelStyle: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.w700,
+              ];
+              final columns = constraints.maxWidth < 420 ? 1 : 3;
+              final width =
+                  (constraints.maxWidth - (columns - 1) * 8) / columns;
+              return Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final field in fields)
+                    SizedBox(
+                      width: width,
+                      child: TextFormField(
+                        controller: field.$2,
+                        onChanged: (_) => onChanged(),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
                         ),
-                        suffixText: 'mm',
+                        decoration: InputDecoration(
+                          labelText: field.$1,
+                          labelStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          suffixText: 'mm',
+                        ),
+                        validator: (value) {
+                          if (!draft.selected && !locked) return null;
+                          final text = value?.trim() ?? '';
+                          if (text.isEmpty) return 'Requerida';
+                          final number = double.tryParse(text);
+                          return number == null || number < 0 || number > 30
+                              ? 'Usa 0–30 mm'
+                              : null;
+                        },
                       ),
-                      validator: (value) {
-                        if (!draft.selected && !locked) return null;
-                        final text = value?.trim() ?? '';
-                        if (text.isEmpty) return null;
-                        final number = double.tryParse(text);
-                        return number == null || number < 0 ? 'Inválido' : null;
-                      },
                     ),
-                  ),
-                ),
-            ],
+                ],
+              );
+            },
           ),
           const SizedBox(height: 8),
-          DropdownButtonFormField<InspectionTireStatus>(
-            initialValue: draft.status,
-            isExpanded: true,
-            decoration: InputDecoration(
-              labelText: 'Resultado',
-              labelStyle: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            items: [
-              for (final status in InspectionTireStatus.values)
-                DropdownMenuItem(value: status, child: Text(status.label)),
-            ],
-            onChanged: (value) {
-              if (value != null) draft.status = value;
+          Builder(
+            builder: (context) {
+              final average = draft.average;
+              final status = average == null
+                  ? null
+                  : rules?.statusForAverage(average);
+              return InputDecorator(
+                decoration: InputDecoration(
+                  labelText: 'Resultado automático',
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                child: Text(
+                  average == null
+                      ? 'Ingresa las tres mediciones'
+                      : '${status?.label ?? 'Sin regla'} · ${average.toStringAsFixed(2)} mm promedio',
+                ),
+              );
             },
           ),
           const SizedBox(height: 8),
@@ -662,7 +733,7 @@ class _TireDraftFields extends StatelessWidget {
             decoration: InputDecoration(
               labelText: 'Nota (opcional)',
               labelStyle: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.w700,
               ),
             ),

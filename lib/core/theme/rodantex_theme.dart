@@ -35,6 +35,10 @@ abstract final class RodantexTheme {
 
     return base.copyWith(
       textTheme: textTheme,
+      dialogTheme: DialogThemeData(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: isDark
             ? RodantexColors.bgSurfaceDark
@@ -108,6 +112,18 @@ abstract final class RodantexTheme {
         fillColor: isDark
             ? RodantexColors.bgElevatedDark
             : RodantexColors.bgSurface,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        labelStyle: textTheme.bodyMedium?.copyWith(
+          color: colorScheme.onSurface,
+          fontWeight: FontWeight.w700,
+        ),
+        floatingLabelStyle: textTheme.bodySmall?.copyWith(
+          color: isDark ? RodantexColors.infoLight : RodantexColors.infoDark,
+          fontWeight: FontWeight.w800,
+        ),
         hintStyle: textTheme.bodyMedium?.copyWith(
           color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
         ),

@@ -3,18 +3,18 @@ import 'package:go_router/go_router.dart';
 
 import 'package:rodantex_app/app/app_shell.dart';
 import 'package:rodantex_app/app/auth_scope.dart';
-import 'package:rodantex_app/app/coming_soon_page.dart';
 import 'package:rodantex_app/app/more_page.dart';
 import 'package:rodantex_app/app/routes.dart';
 import 'package:rodantex_app/core/auth/auth_controller.dart';
 import 'package:rodantex_app/features/auth/presentation/login_page.dart';
 import 'package:rodantex_app/features/dashboard/presentation/dashboard_page.dart';
 import 'package:rodantex_app/features/maintenances/presentation/maintenance_detail_page.dart';
-import 'package:rodantex_app/features/maintenances/presentation/maintenance_page.dart';
+import 'package:rodantex_app/features/maintenances/presentation/maintenance_orders_page.dart';
 import 'package:rodantex_app/features/inspections/presentation/inspection_detail_page.dart';
 import 'package:rodantex_app/features/inspections/presentation/inspection_rules_page.dart';
 import 'package:rodantex_app/features/inspections/presentation/inspections_page.dart';
 import 'package:rodantex_app/features/profile/presentation/profile_page.dart';
+import 'package:rodantex_app/features/routes/presentation/routes_page.dart';
 import 'package:rodantex_app/features/vehicles/presentation/vehicle_detail_page.dart';
 import 'package:rodantex_app/features/vehicles/presentation/vehicles_page.dart';
 
@@ -96,12 +96,8 @@ class AppRouter {
             GoRoute(
               path: AppRoutes.routes,
               name: RouteNames.routes,
-              builder: (context, state) => const ComingSoonPage(
-                title: 'Rutas',
-                icon: Icons.route_rounded,
-                message:
-                    'Aquí crearás rutas, asignarás vehículos y seguirás su '
-                    'avance en tiempo real.',
+              builder: (context, state) => RoutesPage(
+                repository: AuthScope.routesRepository(context),
               ),
             ),
           ],
@@ -116,7 +112,7 @@ class AppRouter {
                 GoRoute(
                   path: 'maintenances',
                   name: RouteNames.maintenances,
-                  builder: (context, state) => MaintenancePage(
+                  builder: (context, state) => MaintenanceOrdersPage(
                     repository: AuthScope.maintenanceRepository(context),
                   ),
                   routes: [

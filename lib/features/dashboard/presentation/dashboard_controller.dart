@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:rodantex_app/core/network/api_exception.dart';
 import 'package:rodantex_app/features/dashboard/data/dashboard_repository.dart';
 import 'package:rodantex_app/features/dashboard/data/models/paged_block.dart';
-import 'package:rodantex_app/features/dashboard/data/models/spending_history.dart';
 // `foundation` también exporta `Summary`: se importa con prefijo.
 import 'package:rodantex_app/features/dashboard/data/models/summary.dart'
     as dashboard;
@@ -12,11 +11,10 @@ import 'package:rodantex_app/features/dashboard/presentation/load_status.dart';
 
 /// Estado de la pantalla Dashboard (inicio).
 ///
-/// Carga **en paralelo** los tres bloques del dashboard y expone cada uno con
+/// Carga **en paralelo** los bloques del dashboard y expone cada uno con
 /// su propio estado, para que una tarjeta con error no tumbe a las demás:
 ///
-/// - `summaryStatus` → KPIs (flota, gasto del periodo, personal).
-/// - `spendingStatus` → gráfica de gasto mensual.
+/// - `summaryStatus` → estado general de la flota.
 /// - `maintenanceStatus` → lista de vehículos en mantenimiento.
 ///
 /// [load] es idempotente frente a recargas concurrentes: si ya hay una carga en
@@ -29,16 +27,9 @@ class DashboardController extends ChangeNotifier {
   /// Cuántos vehículos pide la tarjeta de mantenimiento.
   static const maintenanceLimit = 6;
 
-  /// Meses que pide la gráfica de gasto.
-  static const spendingMonths = 6;
-
   LoadStatus summaryStatus = LoadStatus.idle;
   dashboard.Summary? summary;
   String? summaryError;
-
-  LoadStatus spendingStatus = LoadStatus.idle;
-  SpendingHistory? spending;
-  String? spendingError;
 
   LoadStatus maintenanceStatus = LoadStatus.idle;
 
@@ -64,7 +55,6 @@ class DashboardController extends ChangeNotifier {
   /// `true` cuando al menos un bloque está en estado de error.
   bool get hasError =>
       summaryStatus == LoadStatus.failure ||
-      spendingStatus == LoadStatus.failure ||
       maintenanceStatus == LoadStatus.failure;
 
   /// Recarga todo el dashboard con un filtro [depotId] opcional.
@@ -78,16 +68,11 @@ class DashboardController extends ChangeNotifier {
       // solo se actualizan al llegar la respuesta; en la primera carga se
       // muestran los skeletons.
       summaryStatus = LoadStatus.loading;
-      spendingStatus = LoadStatus.loading;
       maintenanceStatus = LoadStatus.loading;
     }
     _safeNotify();
 
-    await Future.wait([
-      _loadSummary(),
-      _loadSpending(),
-      _loadMaintenance(),
-    ]);
+    await Future.wait([_loadSummary(), _loadMaintenance()]);
 
     _isLoading = false;
     _safeNotify();
@@ -108,24 +93,6 @@ class DashboardController extends ChangeNotifier {
     }
   }
 
-  Future<void> _loadSpending() async {
-    try {
-      final data = await _repository.spending(
-        depotId: depotId,
-        months: spendingMonths,
-      );
-      spending = data;
-      spendingError = null;
-      spendingStatus = data.isEmpty ? LoadStatus.empty : LoadStatus.success;
-    } on ApiException catch (error) {
-      spendingError = error.message;
-      spendingStatus = LoadStatus.failure;
-    } on Object {
-      spendingError = 'No se pudo cargar el gasto.';
-      spendingStatus = LoadStatus.failure;
-    }
-  }
-
   Future<void> _loadMaintenance() async {
     try {
       final block = await _repository.vehiclesInMaintenance(
@@ -134,9 +101,7 @@ class DashboardController extends ChangeNotifier {
       );
       maintenance = block;
       maintenanceError = null;
-      maintenanceStatus = block.isEmpty
-          ? LoadStatus.empty
-          : LoadStatus.success;
+      maintenanceStatus = block.isEmpty ? LoadStatus.empty : LoadStatus.success;
     } on ApiException catch (error) {
       maintenanceError = error.message;
       maintenanceStatus = LoadStatus.failure;

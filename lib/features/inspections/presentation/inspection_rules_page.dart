@@ -166,7 +166,7 @@ class _InspectionRulesPageState extends State<InspectionRulesPage> {
           decoration: InputDecoration(
             labelText: 'Tipo de vehículo',
             labelStyle: TextStyle(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -236,7 +236,7 @@ class _InspectionRulesPageState extends State<InspectionRulesPage> {
                         decoration: InputDecoration(
                           labelText: status.label,
                           labelStyle: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w700,
                           ),
                           suffixText: 'mm',

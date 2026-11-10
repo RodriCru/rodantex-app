@@ -209,6 +209,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
+    scrollable: true,
     title: const Text('Editar perfil'),
     content: SizedBox(
       width: 440,
@@ -320,7 +321,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
     decoration: InputDecoration(
       labelText: label,
       labelStyle: TextStyle(
-        color: Theme.of(context).colorScheme.primary,
+        color: Theme.of(context).colorScheme.onSurface,
         fontWeight: FontWeight.w700,
       ),
     ),

@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:rodantex_app/core/network/api_client.dart';
 import 'package:rodantex_app/core/network/api_exception.dart';
 import 'package:rodantex_app/features/maintenances/data/models/maintenance.dart';
+import 'package:rodantex_app/features/maintenances/data/models/maintenance_order.dart';
 import 'package:rodantex_app/features/maintenances/data/models/maintenance_supplier.dart';
 import 'package:rodantex_app/features/vehicles/data/models/vehicle.dart';
 
@@ -11,6 +12,44 @@ class MaintenanceRepository {
   const MaintenanceRepository(this._client);
 
   final ApiClient _client;
+
+  /// Lista las órdenes de mantenimiento, incluyendo abiertas y finalizadas.
+  Future<MaintenanceOrderPage> listOrders({int page = 1, int limit = 20, String? search}) => _guard(() async {
+    final response = await _client.get<Map<String, dynamic>>('maintenance-orders', query: {
+      'page': page,
+      'limit': limit,
+      if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
+    });
+    return MaintenanceOrderPage.fromJson(_client.unwrap(response.data));
+  });
+
+  /// Abre una orden y cambia los vehículos a mantenimiento.
+  Future<MaintenanceOrder> createOrder({required List<String> vehicleIds, required String entryDescription}) => _guard(() async {
+    final response = await _client.post<Map<String, dynamic>>('maintenance-orders', data: {
+      'vehicleIds': vehicleIds,
+      'entryDescription': entryDescription,
+    });
+    return MaintenanceOrder.fromJson(_client.unwrap(response.data));
+  });
+
+  /// Registra el servicio realizado y completa la orden.
+  Future<MaintenanceOrder> completeOrder(String id, Map<String, dynamic> data) => _guard(() async {
+    final response = await _client.post<Map<String, dynamic>>('maintenance-orders/$id/complete', data: data);
+    return MaintenanceOrder.fromJson(_client.unwrap(response.data));
+  });
+
+  /// Cancela una orden que todavía no fue completada.
+  Future<MaintenanceOrder> cancelOrder(String id) => _guard(() async {
+    final response = await _client.post<Map<String, dynamic>>('maintenance-orders/$id/cancel');
+    return MaintenanceOrder.fromJson(_client.unwrap(response.data));
+  });
+
+  /// Sube o reemplaza la factura de una orden.
+  Future<MaintenanceOrder> uploadOrderInvoice({required String id, required List<int> bytes, required String filename}) => _guard(() async {
+    final body = FormData.fromMap({'invoice': MultipartFile.fromBytes(bytes, filename: filename)});
+    final response = await _client.patch<Map<String, dynamic>>('maintenance-orders/$id/invoice', data: body);
+    return MaintenanceOrder.fromJson(_client.unwrap(response.data));
+  });
 
   /// Obtiene los mantenimientos activos con búsqueda y paginación.
   Future<MaintenancePage> list({

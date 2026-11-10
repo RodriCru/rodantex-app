@@ -17,7 +17,9 @@ class MorePage extends StatelessWidget {
           child: ListTile(
             leading: const Icon(Icons.build_outlined),
             title: const Text('Mantenimientos'),
-            subtitle: const Text('Historial, costos y servicios de vehículos'),
+            subtitle: const Text(
+              'Ingresar vehículos al taller y registrar servicios',
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push(AppRoutes.maintenances),
           ),

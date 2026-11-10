@@ -50,4 +50,23 @@ class InspectionRules {
 
   /// Umbrales por estado de llanta.
   final List<InspectionRule> rules;
+
+  /// Clasifica el promedio por umbrales crecientes, dejando el mayor como
+  /// categoría más favorable. `INSPECTION_IMPOSSIBLE` no es una profundidad.
+  InspectionTireStatus? statusForAverage(double averageMm) {
+    final thresholds =
+        rules
+            .where(
+              (rule) =>
+                  rule.status != InspectionTireStatus.inspectionImpossible &&
+                  rule.status != InspectionTireStatus.unknown,
+            )
+            .toList()
+          ..sort((a, b) => a.maxDepthMm.compareTo(b.maxDepthMm));
+    if (thresholds.isEmpty) return null;
+    for (final rule in thresholds) {
+      if (averageMm <= rule.maxDepthMm) return rule.status;
+    }
+    return thresholds.last.status;
+  }
 }
