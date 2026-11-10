@@ -56,6 +56,24 @@ Si solo tienes un dispositivo conectado, basta con:
 flutter run
 ```
 
+### Elegir el backend local o remoto
+
+La app usa `http://localhost:8080/api/v1/` por defecto. Para apuntarla al backend
+de producción, pasa la URL base por `--dart-define` (la app añade `/api/v1/`):
+
+```bash
+flutter run -d <id-del-dispositivo> --dart-define=API_BASE_URL=https://api-prod.rodantex.com
+```
+
+Para ejecutar contra un backend local en un Android físico, usa la IP de la Mac:
+
+```bash
+flutter run -d <id-del-android> --dart-define=API_BASE_URL=192.168.x.x
+```
+
+En un emulador Android usa `10.0.2.2` como host. El backend remoto debe aceptar
+HTTPS y estar accesible desde el dispositivo.
+
 ### Hot reload
 
 Con la app corriendo, en la terminal donde ejecutaste `flutter run`:
