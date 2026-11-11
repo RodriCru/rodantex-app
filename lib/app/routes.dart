@@ -13,6 +13,7 @@ abstract final class AppRoutes {
   static const dashboard = '/home/dashboard';
   static const vehicles = '/home/vehicles';
   static const routes = '/home/routes';
+  static const monitoring = '/home/routes/monitoring';
   static const more = '/home/more';
   static const maintenances = '/home/more/maintenances';
   static const inspections = '/home/more/inspections';
@@ -38,6 +39,7 @@ abstract final class RouteNames {
   static const dashboard = 'dashboard';
   static const vehicles = 'vehicles';
   static const routes = 'routes';
+  static const monitoring = 'monitoring';
   static const more = 'more';
   static const maintenances = 'maintenances';
   static const maintenanceDetail = 'maintenance-detail';

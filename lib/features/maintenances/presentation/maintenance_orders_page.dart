@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
+import 'package:rodantex_app/core/auth/user_role.dart';
 import 'package:rodantex_app/core/network/api_exception.dart';
 import 'package:rodantex_app/features/maintenances/data/maintenance_repository.dart';
 import 'package:rodantex_app/features/maintenances/data/models/maintenance_order.dart';
@@ -9,8 +10,13 @@ import 'package:rodantex_app/features/vehicles/data/models/vehicle.dart';
 
 /// Pantalla principal del flujo de órdenes de mantenimiento.
 class MaintenanceOrdersPage extends StatefulWidget {
-  const MaintenanceOrdersPage({super.key, required this.repository});
+  const MaintenanceOrdersPage({
+    super.key,
+    required this.repository,
+    required this.role,
+  });
   final MaintenanceRepository repository;
+  final UserRole role;
 
   @override
   State<MaintenanceOrdersPage> createState() => _MaintenanceOrdersPageState();
@@ -56,18 +62,21 @@ class _MaintenanceOrdersPageState extends State<MaintenanceOrdersPage> {
     appBar: AppBar(
       title: const Text('Mantenimientos'),
       actions: [
-        IconButton(
-          onPressed: _openOrder,
-          icon: const Icon(Icons.add),
-          tooltip: 'Ingresar vehículo al taller',
-        ),
+        if (widget.role != UserRole.driver)
+          IconButton(
+            onPressed: _openOrder,
+            icon: const Icon(Icons.add),
+            tooltip: 'Ingresar vehículo al taller',
+          ),
       ],
     ),
-    floatingActionButton: FloatingActionButton.extended(
-      onPressed: _openOrder,
-      icon: const Icon(Icons.build_outlined),
-      label: const Text('Ingresar al taller'),
-    ),
+    floatingActionButton: widget.role == UserRole.driver
+        ? null
+        : FloatingActionButton.extended(
+            onPressed: _openOrder,
+            icon: const Icon(Icons.build_outlined),
+            label: const Text('Ingresar al taller'),
+          ),
     body: RefreshIndicator(
       onRefresh: _refresh,
       child: ListView(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:rodantex_app/core/auth/user_role.dart';
 import 'package:rodantex_app/core/network/api_exception.dart';
 import 'package:rodantex_app/features/maintenances/data/maintenance_repository.dart';
 import 'package:rodantex_app/features/maintenances/data/models/maintenance.dart';
@@ -12,6 +13,7 @@ class MaintenanceDetailPage extends StatefulWidget {
     super.key,
     required this.repository,
     required this.maintenanceId,
+    required this.role,
   });
 
   /// Repository que obtiene y modifica el registro.
@@ -19,6 +21,7 @@ class MaintenanceDetailPage extends StatefulWidget {
 
   /// UUID del mantenimiento.
   final String maintenanceId;
+  final UserRole role;
 
   @override
   State<MaintenanceDetailPage> createState() => _MaintenanceDetailPageState();
@@ -79,11 +82,12 @@ class _MaintenanceDetailPageState extends State<MaintenanceDetailPage> {
     appBar: AppBar(
       title: const Text('Detalle del mantenimiento'),
       actions: [
-        IconButton(
-          tooltip: 'Eliminar',
-          onPressed: _delete,
-          icon: const Icon(Icons.delete_outline),
-        ),
+        if (widget.role != UserRole.driver)
+          IconButton(
+            tooltip: 'Eliminar',
+            onPressed: _delete,
+            icon: const Icon(Icons.delete_outline),
+          ),
       ],
     ),
     body: FutureBuilder<Maintenance>(
@@ -143,14 +147,15 @@ class _MaintenanceDetailPageState extends State<MaintenanceDetailPage> {
                       SelectableText(item.invoiceUrl!),
                     ],
                     const SizedBox(height: 18),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: () => _edit(item),
-                        icon: const Icon(Icons.edit_outlined),
-                        label: const Text('Editar mantenimiento'),
+                    if (widget.role != UserRole.driver)
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: () => _edit(item),
+                          icon: const Icon(Icons.edit_outlined),
+                          label: const Text('Editar mantenimiento'),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

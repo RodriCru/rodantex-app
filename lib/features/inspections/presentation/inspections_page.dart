@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:rodantex_app/core/auth/user_role.dart';
 import 'package:rodantex_app/app/routes.dart';
 import 'package:rodantex_app/core/network/api_exception.dart';
 import 'package:rodantex_app/features/inspections/data/inspection_repository.dart';
@@ -11,9 +12,14 @@ import 'package:rodantex_app/features/vehicles/data/models/vehicle.dart';
 
 /// Historial y registro de inspecciones filtrados por vehículo.
 class InspectionsPage extends StatefulWidget {
-  const InspectionsPage({super.key, required this.repository});
+  const InspectionsPage({
+    super.key,
+    required this.repository,
+    required this.role,
+  });
 
   final InspectionRepository repository;
+  final UserRole role;
 
   @override
   State<InspectionsPage> createState() => _InspectionsPageState();
@@ -104,11 +110,12 @@ class _InspectionsPageState extends State<InspectionsPage> {
     appBar: AppBar(
       title: const Text('Inspecciones'),
       actions: [
-        IconButton(
-          tooltip: 'Reglas de inspección',
-          onPressed: () => context.push(AppRoutes.inspectionRules),
-          icon: const Icon(Icons.tune),
-        ),
+        if (widget.role != UserRole.driver)
+          IconButton(
+            tooltip: 'Reglas de inspección',
+            onPressed: () => context.push(AppRoutes.inspectionRules),
+            icon: const Icon(Icons.tune),
+          ),
       ],
     ),
     body: FutureBuilder<List<Vehicle>>(
@@ -163,7 +170,7 @@ class _InspectionsPageState extends State<InspectionsPage> {
         );
       },
     ),
-    floatingActionButton: _vehicleId == null
+    floatingActionButton: _vehicleId == null || widget.role == UserRole.driver
         ? null
         : FloatingActionButton.extended(
             onPressed: _create,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:rodantex_app/core/auth/user_role.dart';
 import 'package:rodantex_app/core/network/api_exception.dart';
 import 'package:rodantex_app/features/vehicles/data/models/insurance_supplier.dart';
 import 'package:rodantex_app/features/vehicles/data/models/vehicle.dart';
@@ -12,10 +13,12 @@ class VehicleDetailPage extends StatefulWidget {
     super.key,
     required this.vehicleRepository,
     required this.vehicleId,
+    required this.role,
   });
 
   final VehicleRepository vehicleRepository;
   final String vehicleId;
+  final UserRole role;
 
   @override
   State<VehicleDetailPage> createState() => _VehicleDetailPageState();
@@ -193,23 +196,25 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
-                  IconButton(
-                    tooltip: maintenance == null ? 'Registrar' : 'Editar',
-                    onPressed: () => _editMaintenance(maintenance),
-                    icon: Icon(
-                      maintenance == null ? Icons.add : Icons.edit_outlined,
+                  if (widget.role != UserRole.driver)
+                    IconButton(
+                      tooltip: maintenance == null ? 'Registrar' : 'Editar',
+                      onPressed: () => _editMaintenance(maintenance),
+                      icon: Icon(
+                        maintenance == null ? Icons.add : Icons.edit_outlined,
+                      ),
                     ),
-                  ),
                 ],
               ),
               if (maintenance == null) ...[
                 const Text('Aún no hay datos de mantenimiento registrados.'),
                 const SizedBox(height: 8),
-                OutlinedButton.icon(
-                  onPressed: () => _editMaintenance(null),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Registrar datos'),
-                ),
+                if (widget.role != UserRole.driver)
+                  OutlinedButton.icon(
+                    onPressed: () => _editMaintenance(null),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Registrar datos'),
+                  ),
               ] else ...[
                 _DetailRow(
                   label: 'Próxima verificación',

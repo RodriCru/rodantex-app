@@ -6,6 +6,7 @@ import 'package:rodantex_app/app/auth_scope.dart';
 import 'package:rodantex_app/app/more_page.dart';
 import 'package:rodantex_app/app/routes.dart';
 import 'package:rodantex_app/core/auth/auth_controller.dart';
+import 'package:rodantex_app/core/auth/user_role.dart';
 import 'package:rodantex_app/features/auth/presentation/login_page.dart';
 import 'package:rodantex_app/features/dashboard/presentation/dashboard_page.dart';
 import 'package:rodantex_app/features/maintenances/presentation/maintenance_detail_page.dart';
@@ -15,6 +16,7 @@ import 'package:rodantex_app/features/inspections/presentation/inspection_rules_
 import 'package:rodantex_app/features/inspections/presentation/inspections_page.dart';
 import 'package:rodantex_app/features/profile/presentation/profile_page.dart';
 import 'package:rodantex_app/features/routes/presentation/routes_page.dart';
+import 'package:rodantex_app/features/routes/presentation/monitoring_page.dart';
 import 'package:rodantex_app/features/vehicles/presentation/vehicle_detail_page.dart';
 import 'package:rodantex_app/features/vehicles/presentation/vehicles_page.dart';
 
@@ -85,6 +87,7 @@ class AppRouter {
                   builder: (context, state) => VehicleDetailPage(
                     vehicleRepository: AuthScope.vehicleRepository(context),
                     vehicleId: state.pathParameters['id']!,
+                    role: AuthScope.of(context).role,
                   ),
                 ),
               ],
@@ -98,7 +101,17 @@ class AppRouter {
               name: RouteNames.routes,
               builder: (context, state) => RoutesPage(
                 repository: AuthScope.routesRepository(context),
+                role: AuthScope.of(context).role,
               ),
+              routes: [
+                GoRoute(
+                  path: 'monitoring',
+                  name: RouteNames.monitoring,
+                  builder: (context, state) => MonitoringPage(
+                    repository: AuthScope.routesRepository(context),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -107,13 +120,15 @@ class AppRouter {
             GoRoute(
               path: AppRoutes.more,
               name: RouteNames.more,
-              builder: (context, state) => const MorePage(),
+              builder: (context, state) =>
+                  MorePage(role: AuthScope.of(context).role),
               routes: [
                 GoRoute(
                   path: 'maintenances',
                   name: RouteNames.maintenances,
                   builder: (context, state) => MaintenanceOrdersPage(
                     repository: AuthScope.maintenanceRepository(context),
+                    role: AuthScope.of(context).role,
                   ),
                   routes: [
                     GoRoute(
@@ -122,6 +137,7 @@ class AppRouter {
                       builder: (context, state) => MaintenanceDetailPage(
                         repository: AuthScope.maintenanceRepository(context),
                         maintenanceId: state.pathParameters['id']!,
+                        role: AuthScope.of(context).role,
                       ),
                     ),
                   ],
@@ -131,6 +147,7 @@ class AppRouter {
                   name: RouteNames.inspections,
                   builder: (context, state) => InspectionsPage(
                     repository: AuthScope.inspectionRepository(context),
+                    role: AuthScope.of(context).role,
                   ),
                   routes: [
                     GoRoute(
@@ -174,12 +191,33 @@ class AppRouter {
     // `/home` es la raíz del shell: lleva al dashboard.
     if (location == AppRoutes.home) return AppRoutes.dashboard;
 
+    if (_auth.status == AuthStatus.authenticated &&
+        !_roleCanAccess(location, _auth.role)) {
+      return AppRoutes.dashboard;
+    }
+
     return switch (_auth.status) {
       AuthStatus.unknown => isSplash ? null : AppRoutes.splash,
       AuthStatus.unauthenticated => isLogin ? null : AppRoutes.login,
       AuthStatus.authenticated =>
         (isLogin || isSplash) ? AppRoutes.dashboard : null,
     };
+  }
+
+  static bool _roleCanAccess(String location, UserRole role) {
+    if (location == AppRoutes.vehicles ||
+        location.startsWith('${AppRoutes.vehicles}/')) {
+      return role != UserRole.accountant;
+    }
+    if (location == AppRoutes.routes ||
+        location.startsWith('${AppRoutes.routes}/')) {
+      return role != UserRole.mechanic;
+    }
+    if (location == AppRoutes.inspections ||
+        location.startsWith('${AppRoutes.inspections}/')) {
+      return role != UserRole.accountant;
+    }
+    return true;
   }
 }
 
